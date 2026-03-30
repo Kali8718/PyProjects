@@ -1,0 +1,8 @@
+PEP8 :
+    Indentations :
+        an indentation represents 4 spaces, most IDEs convert tabs to spaces to avoid mixture between tab and space that confuses python
+    Lign length :
+        no more than 79 carachters usually, 72 per comment
+    Blank lines :
+        Used to organize parts of the program, striking the right amount
+    

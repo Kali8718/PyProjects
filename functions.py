@@ -1,0 +1,15 @@
+def hello() :
+    print('this is a hello world funtion :)')
+
+hello()
+print("functions can have text between between three strings called a docstring(comment) that describes what the fct does")
+print("A variable in the middle of parantheses is called a parameter, which is needed by the fct to perform its job")
+print("for example\ndef hello('xdc')\ncan be a function that calls hello to xdc or a variable of our choosing")
+print("parameters and arguments are reffered to interchangebly")
+print("In positional arguments, python matches the order of each argument in the call to the parameter in the function definition")
+print("keyword arguments are a name-value pair that associate the name and the value within the argument")
+print("order doesn't matter in this case")
+print("hello('person = 'ali',state = 'letroll')")
+print("when defining a function, a paramter's value can be set, in this case if the argument is ommited when calling ")
+print('it uses the default value set during the definition')
+print("def hello(person, state = 'letroll')")

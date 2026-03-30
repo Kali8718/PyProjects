@@ -1,0 +1,1 @@
+guest & "C:/Users/Mohamed Ali ALKHARAS/AppData/Local/Programs/Python/Python312/python.exe" "c:/Users/Mohamed Ali ALKHARAS/Documents/GitHub/LearnPy/ch_ex/testing.py" has joined the server at 2023-11-15 17:17:00.221243
