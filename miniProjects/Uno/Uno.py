@@ -20,14 +20,14 @@ def generate_set(set) :
             added_card = f'{number}{color}'
             set.append(added_card)
             
+            
+
 def shuffle_set(set) :
-    i = 0
-    for card in set :
-        random_int = random.randint(0,len(set)-1)
-        c = set[i]
-        set[i] = set[random_int]
-        set[random_int] = c
-        i += 1
+    num_of_cards = len(set)
+    for i in range (0, num_of_cards):
+        random_num = random.randint(0, num_of_cards-1)
+        set[i] , set[random_num] = set[random_num] , set[i]
+
         
 
 def ask_number_players() :
@@ -40,5 +40,6 @@ def ask_number_players() :
 
 generate_set(set_list)
 shuffle_set(set_list)
+ask_number_players()
 print(set_list)
 
