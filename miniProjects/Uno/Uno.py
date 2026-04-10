@@ -1,5 +1,18 @@
 import random
 
+class Players:
+    initial_card_count = 4
+    counter = 0
+
+    def __init__(self, name, card_count) :
+        Players.card_count += 1
+
+        self.name = name
+        self.card_count = card_count
+        self.hand_cards = []
+
+
+
 set_list = []
 
 colors = ['G','B','Y','R']
