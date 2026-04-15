@@ -111,4 +111,4 @@ print(f"Last played card: {draw_pile[-1]}")
 
 while True :
     for player in Players.all_players:
-        print(f"{player.cards}")
+        print(f"")
