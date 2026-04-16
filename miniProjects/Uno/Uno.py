@@ -100,9 +100,11 @@ player_2 = Players('Akram')
 generate_set(draw_pile)
 shuffle_set(draw_pile)
 
-
+print(player_1.cards)
 
 player_1.initial_draw(draw_pile)
+
+print(player_1.cards)
 
 print(discard_pile)
 draw_initial_discard_pile(draw_pile)
@@ -111,4 +113,5 @@ print(f"Last played card: {draw_pile[-1]}")
 
 while True :
     for player in Players.all_players:
-        print(f"")
+        print(f"This is {player.name}'s turn")
+        player.play_card()
