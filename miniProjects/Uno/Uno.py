@@ -62,7 +62,7 @@ class Players :
 
 draw_pile = []
 discard_pile = []
-player_number = 0
+number_of_players = 0
 
 
 
@@ -94,24 +94,51 @@ def shuffle_set(set) :
         
 def draw_initial_discard_pile(set) :
     discard_pile.append(set.pop(0))
+    print(f"The initial card has been played: {discard_pile[-1]}")
 
 
-def ask_number_players() :
-    num_players = input("How many players are in the game ? ")
-    print(f"There are {num_players} players in this game")
-    return num_players
+
+            
+            
+def ask_player_names() :
+    player_names = []
+    i = 0
+
+    while True :
+        name = input(f"Enter the name of player {i+1}, type done when you have inputed all the names: \n")
+        if name.lower() == 'done' and i >= 2 :
+            break
+        elif name.lower() == 'done' and i < 2 :
+            print(f"The game needs a minimum of 2 players, you have only entered {len(player_names)}")
+        elif name[0].isalpha():
+            player_names.append(name)
+            i+=1
+        else:
+            print("The name cannot start with a digit")
+    
+    print(f"There are {len(player_names)} players in this game")
+    print(player_names)
+    return player_names
+
+
 
 
 def initialize_game():
     generate_set(draw_pile)
     shuffle_set(draw_pile)
-    player_number = ask_number_players()
+    player_names = ask_player_names()
+    draw_initial_discard_pile(draw_pile)
+    
+        
     
 #fuck around and find out section
 
 player_1 = Players('Ali')
 player_2 = Players('Akram')
 
+initialize_game()
+
+"""
 generate_set(draw_pile)
 shuffle_set(draw_pile)
 print(draw_pile)
@@ -127,10 +154,8 @@ draw_initial_discard_pile(draw_pile)
 print(f"Last played card: {draw_pile[-1]}")
 
 
-<<<<<<< HEAD
 while True :
     for player in Players.all_players:
         print(f"This is {player.name}'s turn")
         player.play_card()
-=======
->>>>>>> 210a879712a546b9babe44438130ef8a30d8e681
+"""
