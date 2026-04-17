@@ -1,11 +1,15 @@
-import random
+import random, time
 
 """
 Functions to be added later:
+- Verify choice function works well by playing more, clean up the text output in the terminal
 - Special cards : reverse turn, +2, +4, choose color, etc
 - Interface
-- Function to initialize the game
+- Function to initialize the game -- DONE
 - Consolidate the deck creation and shuffling under 1 function -- DONE
+- Choice function with Players class that will allow players to select (draw, play card)
+- functions to clear the discard while keeping the last card when draw is empty, shuffle it and send it to the draw pile
+- turn ask players name to a class method 
 """
 
 # Create one function to initialize the game, the function can regroup all the sub functions (for now: ask player number,
@@ -26,43 +30,58 @@ class Players :
         self.cards = []       
         Players.all_players.append(self)
         
-    def draw_card(self, set) :
-        self.cards.append(set.pop(0))     
+    def draw_card(self, draw) :
+        self.cards.append(draw.pop(0))     
 
-    def initial_draw(self, set) :
+    def initial_draw(self, draw) :
         for i in range(0,4) :
-            self.draw_card(set)
+            self.draw_card(draw)
+        
             
     def check_card_in_hand(self, card):
         if card.upper() in self.cards :
             return True
         return False
-        
-    def play_card(self) :
-        while True:
-            #first we check if the card is in the player's hand (can be re-written as a function later and called)
-            while True:
-                played_card = input("Select a card to play: ")
-                if played_card.upper() in self.cards :
-                    print(f"{self.name} has played {played_card}")
-                    break
-                else :
-                    print(f"card not in hand, re-enter it {[self.cards]}")
-            #Now we check if the played card is correct to play
-            for char in played_card:
-                if char in discard_pile[-1] :
-                    discard_pile.append(played_card)
-                    return
-            print("Card can not be played, please Select an appropriate card or Draw one")
+    
+    def check_playable_card(self, card, last_discarded) :
+        for char in card :
+            if char in last_discarded :
+                return True
+        return False
+    
+    def play_card(self, card, discard) :
+        #append the discard card to the discard pipe and pop the card from hand (index is used to return a number as pop accepts only nums)
+        discard.append(card)
+        self.cards.remove(card)
             
 
-        
+    def play_or_draw(self, draw, discard, last_discard) :
+        # functions either lets the player draw or play card
+        # if the players draws then a card is appended to his cards and removed from the draw
+        while True :
+            choice = input("Type the card you want to play or type D to draw \n")
+            
+            if choice.upper() == "D" :
+                self.draw_card(draw)
+                print(f"{self.name} drew a card")
+                break
+                
+            else:    
+                if self.check_card_in_hand(choice) :
+                    if self.check_playable_card(choice, last_discard) :
+                        self.play_card(choice, discard)
+                        break
+                    print("This card is not a correct play")
+                elif not self.check_card_in_hand(choice) :
+                    print("You don't have this card")
 
 #set of functions to create and shuffle the set
 
 draw_pile = []
 discard_pile = []
-number_of_players = 0
+players = []
+turn = 0
+direction = 1 #1 for normal order, - 1 for opposite order when a reverse card is used. reverse cards not added for now
 
 
 
@@ -92,9 +111,9 @@ def shuffle_set(set) :
         set[i] , set[random_num] = set[random_num] , set[i]
         
         
-def draw_initial_discard_pile(set) :
+def draw_initial_discard_pile(set, discard) :
     discard_pile.append(set.pop(0))
-    print(f"The initial card has been played: {discard_pile[-1]}")
+    print(f"The initial card has been played: {discard[-1]}")
 
 
 
@@ -105,10 +124,10 @@ def ask_player_names() :
     i = 0
 
     while True :
-        name = input(f"Enter the name of player {i+1}, type done when you have inputed all the names: \n")
-        if name.lower() == 'done' and i >= 2 :
+        name = input(f"Enter the name of player {i+1}, type done or x when you have inputed all the names: \n")
+        if (name.lower() == 'done' or name.lower() == 'x') and i >= 2 :
             break
-        elif name.lower() == 'done' and i < 2 :
+        elif (name.lower() == 'done' or name.lower() == 'x') and i < 2 :
             print(f"The game needs a minimum of 2 players, you have only entered {len(player_names)}")
         elif name[0].isalpha():
             player_names.append(name)
@@ -123,20 +142,48 @@ def ask_player_names() :
 
 
 
-def initialize_game():
-    generate_set(draw_pile)
-    shuffle_set(draw_pile)
+def initialize_game(draw, discard):
+    #includes generating the set, shuffling it, creating the players, serving them cards
+    generate_set(draw)
+    shuffle_set(draw)
     player_names = ask_player_names()
-    draw_initial_discard_pile(draw_pile)
+    draw_initial_discard_pile(draw, discard)
+    for name in player_names :
+        players.append(Players(name))
     
+    for player in players:
+        player.initial_draw(draw)
+        print(player.cards)
+
         
+    
     
 #fuck around and find out section
 
-player_1 = Players('Ali')
-player_2 = Players('Akram')
 
-initialize_game()
+initialize_game(draw_pile, discard_pile)
+
+#my current idea is to use a dictionary and assign a number to each number, then we can use an i to increment or decrement
+# we can honestly also do this with a list and use the i as the index, much simpler
+#another idea would be to use a while loop (gpt idea not mine)
+
+
+while len(players) > 1 :
+    print(f"This is {players[turn].name}'s turn, available cards are {players[turn].cards}")
+    players[turn].play_or_draw(draw_pile, discard_pile, discard_pile[-1])
+    print(players[turn].cards)
+    turn = turn + direction
+    
+    
+
+print("Round over")
+
+
+
+
+
+
+
 
 """
 generate_set(draw_pile)
