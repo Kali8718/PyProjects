@@ -21,7 +21,5 @@ player_2 = Players('Othmane', Players.initial_card_count)
 print(player_1.player_code)
 print(player_2.player_code)
 
-print(player_1.card_count)
-player_1.add_card(1)
-print(player_1.card_count)
+
 
