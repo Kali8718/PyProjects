@@ -1,0 +1,12 @@
+- [X]Verify choice function works well by playing more, clean up the text output in the terminal -- Done (text can be cleaned more)
+- [ ]Special cards : reverse turn, +2, +4, choose color, etc
+- [ ]Interface
+- [X]Function to initialize the game -- DONE
+- [X]Consolidate the deck creation and shuffling under 1 function -- DONE
+- [X] Choice function with Players class that will allow players to select (draw, play card) -- DONE
+- [ ] functions to clear the discard while keeping the last card when draw is empty, shuffle it and send it to the draw pile
+- [ ] turn ask players name to a class method 
+- [ ] add points logic and multiple rounds, use json file to store the players and allow em to resume ongoing games
+- [ ] create BOTS YOU CAN PLAY AGAINST
+- [ ] Create GUI
+- [ ] Add colors for cards in terminal (maybe a logic that convers 4B to 4 Blue colored)

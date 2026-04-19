@@ -2,14 +2,19 @@ import random, time
 
 """
 Functions to be added later:
-- Verify choice function works well by playing more, clean up the text output in the terminal
+- Verify choice function works well by playing more, clean up the text output in the terminal -- Done (text can be cleaned more)
 - Special cards : reverse turn, +2, +4, choose color, etc
 - Interface
 - Function to initialize the game -- DONE
 - Consolidate the deck creation and shuffling under 1 function -- DONE
-- Choice function with Players class that will allow players to select (draw, play card)
+- Choice function with Players class that will allow players to select (draw, play card) -- DONE
 - functions to clear the discard while keeping the last card when draw is empty, shuffle it and send it to the draw pile
 - turn ask players name to a class method 
+- add points logic and multiple rounds, use json file to store the players and allow em to resume ongoing games
+- create BOTS YOU CAN PLAY AGAINST
+- Create GUI
+- Add colors for cards in terminal (maybe a logic that convers 4B to 4 Blue colored)
+
 """
 
 # Create one function to initialize the game, the function can regroup all the sub functions (for now: ask player number,
@@ -116,7 +121,15 @@ def draw_initial_discard_pile(set, discard) :
     print(f"The initial card has been played: {discard[-1]}")
 
 
-
+def show_last_discarded(discard):
+    print(f"Card on table: {discard[-1]}")
+    
+def check_if_draw_pile_empty_then_shuffle(draw, discard) :
+    # checks if the draw pile has emptied, if true takes all the cards except the last from discord, shuffles and sends em to draw
+    if len(draw) == 0 :
+        draw.extend()
+        del discard[0:-1]
+        
             
             
 def ask_player_names() :
@@ -136,7 +149,8 @@ def ask_player_names() :
             print("The name cannot start with a digit")
     
     print(f"There are {len(player_names)} players in this game")
-    print(player_names)
+    for i, name in enumerate(player_names) :
+        print(f"Player {i+1}: {name}")
     return player_names
 
 
@@ -153,7 +167,7 @@ def initialize_game(draw, discard):
     
     for player in players:
         player.initial_draw(draw)
-        print(player.cards)
+
 
         
     
@@ -169,10 +183,20 @@ initialize_game(draw_pile, discard_pile)
 
 
 while len(players) > 1 :
+    print("-----------------------------------------------------------------------------")
     print(f"This is {players[turn].name}'s turn, available cards are {players[turn].cards}")
+    show_last_discarded(discard_pile)
     players[turn].play_or_draw(draw_pile, discard_pile, discard_pile[-1])
-    print(players[turn].cards)
+    print(f"{players[turn].name}'s new cards are: {players[turn].cards}")
+    
     turn = turn + direction
+    time.sleep(1)
+
+    #way to return to the starter of the round (will need to implement two way logic for reverse using if direction or abs())
+    if turn == len(players) :
+        turn = 0
+
+    check_if_draw_pile_empty_then_shuffle(draw_pile,discard_pile)
     
     
 
