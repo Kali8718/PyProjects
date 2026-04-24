@@ -4,6 +4,12 @@ from rich.text import Text
 
 
 """
+
+Immediate next steps:
+implement a skip round function that gets played on special cards, starting with draw 2, then implement same for a skip card, logic should handle overriding with own +2
+
+
+
 Functions to be added later:
 - Verify choice function works well by playing more, clean up the text output in the terminal -- Done (text can be cleaned more)
 - Special cards : reverse turn, +2, +4, choose color, etc
@@ -71,19 +77,20 @@ class Players :
         return False
         
             
-    def play_special_card(self, card, flag) :
+    def modify_flag(self, card) :
     #function that sets the flag for the next player for a special card
-        if "Draw 2" in card :
+        if "Draw 2".upper() in card :
             return "D2"
-        elif "Draw 4" in card:
+        elif "Draw 4".upper() in card:
             return "D4"
+
     
-    def check_flag_and_act(self, draw, flag) :
+    def check_flag_and_act(self, draw, flag_func) :
     #checks if the player has an action card from the previous player and resets the flag
-        if flag == "D2":
+        if flag_func == "D2":
             self.draw_card(draw, 2)
             print("The next player will draw 2 cards")
-        elif flag == "D4":
+        elif flag_func == "D4":
             self.draw_card(draw, 4)
             print("The next player will draw 4 cards")
         return None
@@ -93,6 +100,7 @@ class Players :
         # functions either lets the player draw or play card
         # if the players draws then a card is appended to his cards and removed from the draw
         while True :
+            #check if the player is affected by a previous action card, if flag is none play normally, if its not do the action
             if flag == None:
                 choice = input("Type the card you want to play (e.g. 8G, 7B, ReverseB) or type D to draw \n")
                 
@@ -105,8 +113,8 @@ class Players :
                     if self.check_card_in_hand(choice) :
                         if self.check_playable_card(choice, last_discard) :
                             if self.check_if_special_card(choice) :
-                                self.play_special_card(draw, flag)
-                                break
+                                self.play_card(choice, discard)
+                                return self.modify_flag(choice)
                             else:
                                 self.play_card(choice, discard)
                                 break
@@ -185,7 +193,7 @@ flag = None
 
 def generate_set(set) :
     colors = ['G','B','Y','R']
-    action_cards = ['Skip','Reverse', 'Draw 2'] # S: Skip, R: Reverse, +2: Draw 2
+    action_cards = ['Draw 2'] # S: Skip, R: Reverse, +2: Draw 2
     numbers = []
     
     for i in range (0,10) :
@@ -203,9 +211,6 @@ def generate_set(set) :
         for action_card in action_cards:
             card = f"{action_card}{color}"
             set.append(card.upper())
-            
-    
-    
     
     tracker = 0        
     for i in set :
@@ -280,32 +285,27 @@ def initialize_game(draw, discard):
         player.initial_draw(draw)
 
 
-        
-    
     
 #fuck around and find out section
-
-
-initialize_game(draw_pile, discard_pile)
 
 #my current idea is to use a dictionary and assign a number to each number, then we can use an i to increment or decrement
 # we can honestly also do this with a list and use the i as the index, much simpler
 #another idea would be to use a while loop (gpt idea not mine)
-
-
-
+initialize_game(draw_pile, discard_pile)
 
 while len(players) > 1 :
     print("-----------------------------------------------------------------------------")
-    players[turn].cards.append("DRAW 2R")
-    players[turn].cards.append("DRAW 2G")
-    players[turn].cards.append("DRAW 2Y")
-    players[turn].cards.append("DRAW 2B")
+    
+    #append code for debugging, will be removed later
+    
+    flag = players[turn].check_flag_and_act(draw_pile, flag)    
+    
     print(f"This is {players[turn].name}'s turn, available cards are")
     print_inline_list(players[turn].cards)
     show_last_discarded(discard_pile)
-    players[turn].play_or_draw(draw_pile, discard_pile, discard_pile[-1], flag)
-    flag = players[turn].check_flag_and_act(draw_pile, flag)
+    flag = players[turn].play_or_draw(draw_pile, discard_pile, discard_pile[-1], flag)
+    print(f"flag = {flag}")
+
     print(f"{players[turn].name}'s new cards are: ", end="")
     print_inline_list(players[turn].cards)
     
