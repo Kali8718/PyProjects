@@ -1,4 +1,7 @@
-import random, time
+import random, time, re
+from rich.console import Console
+from rich.text import Text
+
 
 """
 Functions to be added later:
@@ -14,6 +17,7 @@ Functions to be added later:
 - create BOTS YOU CAN PLAY AGAINST
 - Create GUI
 - Add colors for cards in terminal (maybe a logic that convers 4B to 4 Blue colored)
+- refactoring
 
 """
 
@@ -35,12 +39,12 @@ class Players :
         self.cards = []       
         Players.all_players.append(self)
         
-    def draw_card(self, draw) :
-        self.cards.append(draw.pop(0))     
+    def draw_card(self, draw, number_of_draws) :
+        for i in range(0,number_of_draws):
+            self.cards.append(draw.pop(0))     
 
     def initial_draw(self, draw) :
-        for i in range(0,4) :
-            self.draw_card(draw)
+        self.draw_card(draw_pile, 4)
         
             
     def check_card_in_hand(self, card):
@@ -49,36 +53,124 @@ class Players :
         return False
     
     def check_playable_card(self, card, last_discarded) :
-        for char in card :
-            if char in last_discarded :
-                return True
+        if card[0].upper() == last_discarded[0].upper() :
+            return True
+        elif card[-1].upper() == last_discarded[-1].upper() :
+            return True
         return False
     
     def play_card(self, card, discard) :
         #append the discard card to the discard pipe and pop the card from hand (index is used to return a number as pop accepts only nums)
         discard.append(card)
         self.cards.remove(card)
+        
+    def check_if_special_card(self, card):
+        #checks if the card is a special card
+        if len(card) > 2:
+            return True
+        return False
+        
             
+    def play_special_card(self, card, flag) :
+    #function that sets the flag for the next player for a special card
+        if "Draw 2" in card :
+            return "D2"
+        elif "Draw 4" in card:
+            return "D4"
+    
+    def check_flag_and_act(self, draw, flag) :
+    #checks if the player has an action card from the previous player and resets the flag
+        if flag == "D2":
+            self.draw_card(draw, 2)
+            print("The next player will draw 2 cards")
+        elif flag == "D4":
+            self.draw_card(draw, 4)
+            print("The next player will draw 4 cards")
+        return None
+                     
 
-    def play_or_draw(self, draw, discard, last_discard) :
+    def play_or_draw(self, draw, discard, last_discard, flag) :
         # functions either lets the player draw or play card
         # if the players draws then a card is appended to his cards and removed from the draw
         while True :
-            choice = input("Type the card you want to play or type D to draw \n")
-            
-            if choice.upper() == "D" :
-                self.draw_card(draw)
-                print(f"{self.name} drew a card")
-                break
+            if flag == None:
+                choice = input("Type the card you want to play (e.g. 8G, 7B, ReverseB) or type D to draw \n")
                 
-            else:    
-                if self.check_card_in_hand(choice) :
-                    if self.check_playable_card(choice, last_discard) :
-                        self.play_card(choice, discard)
-                        break
-                    print("This card is not a correct play")
-                elif not self.check_card_in_hand(choice) :
-                    print("You don't have this card")
+                if choice.upper() == "D" :
+                    self.draw_card(draw, 1)
+                    print(f"{self.name} drew a card")
+                    break
+                    
+                else:    
+                    if self.check_card_in_hand(choice) :
+                        if self.check_playable_card(choice, last_discard) :
+                            if self.check_if_special_card(choice) :
+                                self.play_special_card(draw, flag)
+                                break
+                            else:
+                                self.play_card(choice, discard)
+                                break
+                        print("This card is not a correct play")
+                    elif not self.check_card_in_hand(choice) :
+                        print("You don't have this card")
+            else :
+                self.check_flag_and_act(draw, flag)
+            
+
+
+#Code I don't understand much to color the outputs
+
+console = Console()
+
+COLOR_MAP = {
+    "G": "green",
+    "B": "blue",
+    "Y": "yellow",
+    "R": "red",
+}
+
+def color_text(input_data: str | list) -> None:
+    """
+    Print colored text based on the last character of each string.
+    - G → green
+    - B → blue
+    - Y → yellow
+    - R → red
+ 
+    Accepts a single string or a list of strings.
+    """
+    if isinstance(input_data, list):
+        for item in input_data:
+            _print_colored(item)
+    else:
+        _print_colored(input_data)
+
+def _print_colored(text: str) -> None:
+    last_char = text[-1].upper() if text else ""
+    color = COLOR_MAP.get(last_char)
+ 
+    if color:
+        console.print(Text(text[:-1], style=color))
+    else:
+        # No matching color key — print as-is with a warning
+        console.print(text)
+        console.print(
+            f"  [dim](no color rule for last char: {repr(last_char)})[/dim]"
+        )
+
+def print_inline_list(items: list) -> None:
+    """
+    Print a list of strings inline on a single line, separated by spaces.
+    Each item is colored based on its last character (G/B/Y/R).
+    """
+    for i, item in enumerate(items):
+        last_char = item[-1].upper() if item else ""
+        color = COLOR_MAP.get(last_char)
+        is_last = i == len(items) - 1
+        console.print(Text(item[:-1], style=color or ""), end="" if is_last else " | ")
+    console.print()  # final newline
+
+
 
 #set of functions to create and shuffle the set
 
@@ -87,24 +179,41 @@ discard_pile = []
 players = []
 turn = 0
 direction = 1 #1 for normal order, - 1 for opposite order when a reverse card is used. reverse cards not added for now
+flag = None
 
 
 
 def generate_set(set) :
     colors = ['G','B','Y','R']
+    action_cards = ['Skip','Reverse', 'Draw 2'] # S: Skip, R: Reverse, +2: Draw 2
     numbers = []
     
-    for i in range (0,11) :
+    for i in range (0,10) :
         numbers.append(i)
         if i == 0 and i in numbers :
             pass
         else :
             numbers.append(i)
     
-    for number in numbers :
-        for color in colors :
-            added_card = f'{number}{color}'
-            set.append(added_card)
+    for color in colors :
+        for number in numbers :
+            card = f"{number}{color}"
+            set.append(card.upper())
+        
+        for action_card in action_cards:
+            card = f"{action_card}{color}"
+            set.append(card.upper())
+            
+    
+    
+    
+    tracker = 0        
+    for i in set :
+        if "1" in i :
+            tracker += 1
+    
+    print(set)
+    print_inline_list(set)
     
     return set
             
@@ -118,18 +227,20 @@ def shuffle_set(set) :
         
 def draw_initial_discard_pile(set, discard) :
     discard_pile.append(set.pop(0))
-    print(f"The initial card has been played: {discard[-1]}")
+    console.print(f"The initial card has been played: {discard[-1]}")
 
 
 def show_last_discarded(discard):
-    print(f"Card on table: {discard[-1]}")
+    print(f"Card on table: ",end="")
+    _print_colored(f"{discard[-1]}")
     
 def check_if_draw_pile_empty_then_shuffle(draw, discard) :
     # checks if the draw pile has emptied, if true takes all the cards except the last from discord, shuffles and sends em to draw
     if len(draw) == 0 :
         draw.extend()
         del discard[0:-1]
-        
+        shuffle_set(draw)
+        print("The remainig discard pile has been reshuffled and re-added to be drawn")
             
             
 def ask_player_names() :
@@ -182,15 +293,24 @@ initialize_game(draw_pile, discard_pile)
 #another idea would be to use a while loop (gpt idea not mine)
 
 
+
+
 while len(players) > 1 :
     print("-----------------------------------------------------------------------------")
-    print(f"This is {players[turn].name}'s turn, available cards are {players[turn].cards}")
+    players[turn].cards.append("DRAW 2R")
+    players[turn].cards.append("DRAW 2G")
+    players[turn].cards.append("DRAW 2Y")
+    players[turn].cards.append("DRAW 2B")
+    print(f"This is {players[turn].name}'s turn, available cards are")
+    print_inline_list(players[turn].cards)
     show_last_discarded(discard_pile)
-    players[turn].play_or_draw(draw_pile, discard_pile, discard_pile[-1])
-    print(f"{players[turn].name}'s new cards are: {players[turn].cards}")
+    players[turn].play_or_draw(draw_pile, discard_pile, discard_pile[-1], flag)
+    flag = players[turn].check_flag_and_act(draw_pile, flag)
+    print(f"{players[turn].name}'s new cards are: ", end="")
+    print_inline_list(players[turn].cards)
     
     turn = turn + direction
-    time.sleep(1)
+    time.sleep(.5)
 
     #way to return to the starter of the round (will need to implement two way logic for reverse using if direction or abs())
     if turn == len(players) :

@@ -10,3 +10,6 @@
 - [ ] create BOTS YOU CAN PLAY AGAINST
 - [ ] Create GUI
 - [ ] Add colors for cards in terminal (maybe a logic that convers 4B to 4 Blue colored)
+
+
+Implement the logic for the draw and reverse
