@@ -97,6 +97,7 @@ class Players :
                      
 
     def play_or_draw(self, draw, discard, last_discard, flag) :
+        
         # functions either lets the player draw or play card
         # if the players draws then a card is appended to his cards and removed from the draw
         while True :
@@ -211,11 +212,8 @@ def generate_set(set) :
         for action_card in action_cards:
             card = f"{action_card}{color}"
             set.append(card.upper())
-    
-    tracker = 0        
-    for i in set :
-        if "1" in i :
-            tracker += 1
+            set.append(card.upper())
+
     
     print(set)
     print_inline_list(set)
