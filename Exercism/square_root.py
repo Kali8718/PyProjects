@@ -1,14 +1,20 @@
-def isqrt (y: int) -> int :
-    l = 0
-    u = y + 1
-    
-    while (l < u - 1) :
-        m = (l+u) // 2
-        if (m*m <= y) :
-            l = m
-        else :
-            u = m 
-    
-    return l
+def square_root(number):
+    lower_bound = 0
+    upper_bound = 1
 
-print(isqrt(24363246))
+
+
+    while lower_bound * lower_bound <= number :
+        median = (lower_bound + upper_bound) // 2
+
+        if median * median > number :
+            upper_bound = median
+
+        else :
+            lower_bound = median
+
+        print(median)
+        return median
+    
+
+square_root(2356)
