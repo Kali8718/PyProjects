@@ -13,3 +13,18 @@
 
 
 Implement the logic for the draw and reverse
+
+
+
+
+
+affected by action card --> False --> normal play process
+                        --> True  --> Can interrupt --> False --> apply action and skip
+                                                    --> True  --> Play card and skip
+
+
+play decision tree logic to handle interruptions :
+
+two variables: last_played, and last_discard. The last played can actually be reset to a None if the player did not put a card
+    down during his round (e.g. drew a card)
+

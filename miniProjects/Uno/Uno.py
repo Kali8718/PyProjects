@@ -69,6 +69,7 @@ class Players :
         #append the discard card to the discard pipe and pop the card from hand (index is used to return a number as pop accepts only nums)
         discard.append(card)
         self.cards.remove(card)
+        return card
         
     def check_if_special_card(self, card):
         #checks if the card is a special card
@@ -76,26 +77,94 @@ class Players :
             return True
         return False
         
-            
-    def modify_flag(self, card) :
-    #function that sets the flag for the next player for a special card
-        if "Draw 2".upper() in card :
-            return "D2"
-        elif "Draw 4".upper() in card:
-            return "D4"
 
     
-    def check_flag_and_act(self, draw, flag_func) :
-    #checks if the player has an action card from the previous player and resets the flag
-        if flag_func == "D2":
-            self.draw_card(draw, 2)
-            print("The next player will draw 2 cards")
-        elif flag_func == "D4":
-            self.draw_card(draw, 4)
-            print("The next player will draw 4 cards")
-        return None
-                     
 
+    
+    def prev_action_type(self, prev_played) :
+    #this function returns a past action, that is used by play action after wards
+        if "DRAW" in prev_played.upper() :
+            return "DRAW"
+        elif "SKIP" in prev_played.upper():
+            return "SKIP"
+        elif "REVERSE" in prev_played.upper() :
+            return "REVERSE"
+        else :
+            return None
+        
+    def apply_action(self, draw, past_action):
+        if past_action == "DRAW" :
+            self.draw_card(draw, 2)
+            print(f"{self.name} drew 2 cards")
+            return None
+        elif past_action == "SKIP" :
+            pass
+        elif past_action == "REVERSE" :
+            pass
+        else :
+            print("Error, check apply action function")
+
+        
+    def can_interrupt(self, prev_action, cards) :
+    #checks if the player has a draw 2, skip or reverse thats a correct playing with a prev card
+        for card in cards :
+            if prev_action in card :
+                return True
+        return False
+    
+    def interrupt(self, draw, discard, prev_played) :
+        while True :
+            choice = input("You can over-ride the past action, play a relevant card or press P to pass")
+            if choice.upper == "P" or "PASS" :
+                self.apply_action(draw, self.prev_action_type(prev_played))
+                return None
+                
+            else :
+                if self.check_card_in_hand(choice) :
+                    if self.check_playable_card(choice, prev_played) :
+                        self.play_card(choice, prev_played)
+                        return choice
+                    else :
+                        print("This card is not a correct play")
+                else :
+                    print("You don't have this card")
+            
+            
+            
+        
+    
+    
+    def play_decision_tree(self, draw, discard, last_discard, prev_played, cards) :
+        while True :
+            if prev_played == None :
+                choice = input("Type the card you want to play (e.g. 8G, 7B, ReverseB) or type D to draw \n")   
+                if choice.upper() == "D" :
+                    self.draw_card(draw, 1)
+                    print(f"{self.name} drew a card")
+                    return choice
+                    
+                else:    
+                    if self.check_card_in_hand(choice) :
+                        if self.check_playable_card(choice, last_discard) :
+                            if self.check_if_special_card(choice) :
+                                self.play_card(choice, discard)
+                                return(choice)
+                            else:
+                                self.play_card(choice, discard)
+                                return(choice)
+                        print("This card is not a correct play")
+                    elif not self.check_card_in_hand(choice) :
+                        print("You don't have this card")
+                
+            else :
+                if self.can_interrupt :
+                    return self.interrupt(draw, discard, prev_played)
+                
+                else :
+                    return self.apply_action(draw, self.prev_action_type(prev_played))
+                                      
+                
+'''
     def play_or_draw(self, draw, discard, last_discard, flag) :
         
         # functions either lets the player draw or play card
@@ -124,7 +193,7 @@ class Players :
                         print("You don't have this card")
             else :
                 self.check_flag_and_act(draw, flag)
-            
+ '''           
 
 
 #Code I don't understand much to color the outputs
@@ -188,7 +257,7 @@ discard_pile = []
 players = []
 turn = 0
 direction = 1 #1 for normal order, - 1 for opposite order when a reverse card is used. reverse cards not added for now
-flag = None
+last_played = None
 
 
 
@@ -267,7 +336,13 @@ def ask_player_names() :
         print(f"Player {i+1}: {name}")
     return player_names
 
-
+def reset_last_played(last_played):
+    if last_played != None :
+        if len(last_played) > 2 :
+            return None
+    
+    else :
+        return last_played
 
 
 def initialize_game(draw, discard):
@@ -281,6 +356,8 @@ def initialize_game(draw, discard):
     
     for player in players:
         player.initial_draw(draw)
+        
+    
 
 
     
@@ -289,20 +366,24 @@ def initialize_game(draw, discard):
 #my current idea is to use a dictionary and assign a number to each number, then we can use an i to increment or decrement
 # we can honestly also do this with a list and use the i as the index, much simpler
 #another idea would be to use a while loop (gpt idea not mine)
-initialize_game(draw_pile, discard_pile)
+last_played = initialize_game(draw_pile, discard_pile)
+reset_last_played(last_played)
+
+
+    
+
 
 while len(players) > 1 :
     print("-----------------------------------------------------------------------------")
-    
-    #append code for debugging, will be removed later
-    
-    flag = players[turn].check_flag_and_act(draw_pile, flag)    
+    players[turn].cards.append("DRAW 2B")  
+    players[turn].cards.append("DRAW 2Y")  
+    players[turn].cards.append("DRAW 2G")  
+    players[turn].cards.append("DRAW 2R")  
     
     print(f"This is {players[turn].name}'s turn, available cards are")
     print_inline_list(players[turn].cards)
     show_last_discarded(discard_pile)
-    flag = players[turn].play_or_draw(draw_pile, discard_pile, discard_pile[-1], flag)
-    print(f"flag = {flag}")
+    last_played = players[turn].play_decision_tree(draw_pile, discard_pile, discard_pile[-1], last_played, players[turn].cards)
 
     print(f"{players[turn].name}'s new cards are: ", end="")
     print_inline_list(players[turn].cards)
@@ -315,6 +396,7 @@ while len(players) > 1 :
         turn = 0
 
     check_if_draw_pile_empty_then_shuffle(draw_pile,discard_pile)
+    reset_last_played(last_played)
     
     
 
